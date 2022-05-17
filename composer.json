@@ -108,11 +108,5 @@
             "name": "Batuhan OK",
             "email": "activ45@hotmail.com"
         }
-    ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "C:\\Users\\batv\\Desktop\\Repositories\\laravel-subscriptions"
-        }
     ]
 }
