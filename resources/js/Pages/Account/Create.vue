@@ -155,10 +155,7 @@ import {forEach, reject} from "lodash";
 export default {
     components: {TextInput, AppLayout,PageHeader},
     props:{
-        page_routers: Array,
-        page_used_lan_ips: Array,
-        page_used_wan_ips: Array,
-        page_used_ports: Array,
+        page_routers: Array
     },
     data(){
         return {
@@ -171,11 +168,8 @@ export default {
                 email: null,
                 phone: null,
                 address: null,
-                lan_subnet: '',
-                wan_subnet: '',
-                lan_ip: null,
-                wan_ip: null,
-                wan_port:'',
+                lan_ip: '',
+                wan_ip: '',
                 router_id:''
             }),
         }
@@ -183,36 +177,6 @@ export default {
     methods:{
         submitForm(){
             this.form_account.post(route('account.store'))
-        },
-        getSubnets(filter = null){
-            let router = this.page_routers.find(r => r.id == this.form_account.router_id)
-
-            if( router && router.hasOwnProperty('ips') ){
-                if(filter != null)
-                    return router.ips.filter( f => f.type == filter)
-                else
-                    return router.ips
-            }else
-                return [];
-        },
-        getUsableIPs(filter = null , id){
-            let subnet = this.getSubnets(filter)
-            if( subnet.length > 0 && id > 0 ){
-                let ips = subnet.find(f => f.id == id)
-                return (ips && ips.hasOwnProperty('usable_ips') ) > 0 ? ips.usable_ips : []
-            }else{
-                return []
-            }
-        },
-        getPortRanges(){
-            let wansub = this.getSubnets('wan').find(f => f.id == this.form_account.wan_subnet)
-            if( wansub && wansub.hasOwnProperty('port_range') ){
-                let ports = wansub.port_range;
-               forEach(this.page_used_ports,(p) => ports = reject(ports,(r) => r.max <= p.max && r.min >= p.min))
-                return ports
-            }else{
-                return []
-            }
         }
     }
 }

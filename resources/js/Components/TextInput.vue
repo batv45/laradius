@@ -1,12 +1,13 @@
 <template>
     <div :class="$attrs.class ? $attrs.class : 'mb-3'">
-        <label v-if="label" class="form-label" :for="id">{{ label }}:</label>
+        <label v-if="label" class="form-label" :class="{'required': required}" :for="id">{{ label }}:</label>
         <input :id="id" ref="input"
                v-bind="{ ...$attrs, class: null }"
                class="form-control"
                :class="{ 'is-invalid': error,'form-number': type === 'number' }"
                :type="type"
                :value="value"
+               :required="required"
                @input="$emit('input', $event.target.value)" />
         <div v-if="error" class="invalid-feedback">{{ error }}</div>
         <small v-if="hint" class="form-hint"><question-mark-icon class="icon-sm me-1 ms-0 text-muted"/><span v-html="hint"></span></small>
@@ -19,6 +20,10 @@ import { v4 as uuid } from 'uuid'
 export default {
     inheritAttrs: false,
     props: {
+        required:{
+          type: Boolean,
+          default: false
+        },
         id: {
             type: String,
             default() {

@@ -5,18 +5,15 @@ namespace App\Http\Controllers\Router;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Router\RouterCreateRequest;
 use App\Models\Router;
-use App\Models\RouterIP;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
 
 class RouterController extends Controller
 {
     public function index(Request $request)
     {
-        $routers = Router::withTrashed()->withCount('account')->get();
+        $routers = Router::withTrashed()->get();
 
         if( inertia_get_only() == 'page_routers'){
             $routers->append('client_status');
@@ -47,21 +44,11 @@ class RouterController extends Controller
 
     public function create()
     {
-        //
+        return redirect()->route('router.index');
     }
 
     public function store(RouterCreateRequest $request)
     {
-        if( Router::withTrashed()
-            ->where('ip',$request->input('ip'))
-            ->where('port',$request->input('port'))
-            ->exists() )
-        {
-            $mess = new MessageBag(['ip' => 'IP ve Port zaten kayıtlı.','port'=>'IP ve Port zaten kayıtlı.']);
-            return back()
-                    ->withErrors($mess);
-        }
-
         $router = Router::create($request->validated());
 
         flash('Yeni Mikrotik oluşturuldu.')->success();
@@ -71,8 +58,7 @@ class RouterController extends Controller
     public function show($router_id)
     {
         $router = Router::withTrashed()
-            ->withCount('account','ips')
-            ->with('ips')
+            ->with('lanips','wanips')
             ->findOrFail($router_id);
 
         if( inertia_get_only() == 'page_router'){

@@ -131,3 +131,12 @@ input[type=number].form-number {
 .btn-icon.btn-loading:after {
     color: #000;
 }
+a[disabled] {
+    pointer-events: none;
+}
+.btn.btn-loading .icon {
+    display:none;
+}
+.btn.btn-loading.btn-icon {
+    margin: 10px 0;
+}

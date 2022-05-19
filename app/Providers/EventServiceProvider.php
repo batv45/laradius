@@ -52,6 +52,5 @@ class EventServiceProvider extends ServiceProvider
         User::observe(UserObserver::class);
         Account::observe(AccountObserver::class);
         Router::observe(RouterObserver::class);
-        RouterIP::observe(RouterIPObserver::class);
     }
 }

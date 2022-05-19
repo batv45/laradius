@@ -9,7 +9,7 @@ class RouterCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ip' => 'required|ipv4',
+            'ip_address' => 'required|ipv4|unique:routers',
             'port' => 'required|int',
             'username' => 'required|string',
             'password' => 'required|string',
@@ -20,7 +20,7 @@ class RouterCreateRequest extends FormRequest
     public function attributes()
     {
         return [
-            'ip' => 'IP',
+            'ip_address' => 'IP Adres',
             'port' => 'Port',
             'username' => 'Username',
             'password' => 'Password',

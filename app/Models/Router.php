@@ -10,25 +10,17 @@ class Router extends Model
     use SoftDeletes;
 
     protected $fillable = [
-      'ip', 'port', 'username', 'password', 'description', 'identity'
+      'ip_address', 'port', 'username', 'password', 'description', 'identity'
     ];
 
     // RELATIONSHIPS
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne|Account
-     */
-    public function account()
+    public function lanips(): \Illuminate\Database\Eloquent\Relations\HasMany|RouterLanip
     {
-        return $this->hasOne(Account::class);
+        return $this->hasMany(RouterLanip::class);
     }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany|RouterIP
-     */
-    public function ips()
+    public function wanips(): \Illuminate\Database\Eloquent\Relations\HasMany|RouterWanip
     {
-        return $this->hasMany(RouterIP::class);
+        return $this->hasMany(RouterWanip::class);
     }
 
     // GETTERS

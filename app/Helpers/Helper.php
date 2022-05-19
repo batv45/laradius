@@ -45,3 +45,24 @@ if ( !function_exists('inertia_has_only') ){
         return request()->hasHeader('X-Inertia-Partial-Data');
     }
 }
+
+if ( !function_exists('get_port_ranges') ){
+    function get_port_ranges(int $account_limit, int $min_port = 1000, int $max_port = 65535): \Illuminate\Support\Collection
+    {
+        $ports = collect();
+        if($account_limit < 1)
+            return $ports;
+        $range = ($max_port - ($min_port-1)) / $account_limit;
+        $start = $min_port-1;
+
+        for ($i = 1; $i < $account_limit+1; $i++){
+            $ran = intval($start+$range);
+            $ports->push([
+                'port_min'=> $start+1,
+                'port_max' => $ran
+            ]);
+            $start = $ran;
+        }
+        return $ports;
+    }
+}

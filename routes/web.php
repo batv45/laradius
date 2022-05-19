@@ -20,7 +20,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Router
     Route::resource('router',\App\Http\Controllers\Router\RouterController::class);
-    Route::resource('router.ip',\App\Http\Controllers\Router\RouterIPController::class);
+    Route::resource('router.lanip',\App\Http\Controllers\Router\RouterLanIPController::class);
+    Route::resource('router.wanip',\App\Http\Controllers\Router\RouterWanIPController::class);
 });
 //endregion
 

@@ -17,7 +17,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-4">
-                                <text-input label="Mikrotik IP" v-model="form_router.ip" :error="form_router.errors.ip"></text-input>
+                                <text-input label="Mikrotik IP" v-model="form_router.ip_address" :error="form_router.errors.ip_address"></text-input>
                             </div>
                             <div class="col-md-2">
                                 <text-input label="Port" v-model="form_router.port" :error="form_router.errors.port"></text-input>
@@ -50,7 +50,7 @@
                             <tbody>
                             <tr v-for="router in page_routers">
                                 <td class="fst-italic text-muted">#{{router.id}}</td>
-                                <td>{{router.ip}} : {{router.port}}
+                                <td>{{router.ip_address}} : {{router.port}}
                                     <span class="badge bg-warning" v-if="router.deleted_at">Arşiv</span>
                                 </td>
                                 <td>{{router.username}} : {{router.password}}
@@ -88,8 +88,9 @@ import AppLayout from "~/Layouts/AppLayout";
 import PageHeader from "~/Components/PageHeader";
 import TextInput from "~/Components/TextInput";
 import {Link} from "@inertiajs/inertia-vue";
+import FormErrors from "~/Components/FormErrors";
 export default {
-    components: {TextInput, PageHeader, AppLayout, Link},
+    components: {FormErrors, TextInput, PageHeader, AppLayout, Link},
     props:{
         page_routers: Array,
         page_routers_check: Object
@@ -98,7 +99,7 @@ export default {
         return {
             process_name: null,
             form_router: this.$inertia.form({
-                ip: null,
+                ip_address: null,
                 port: 8728,
                 username: 'admin',
                 password: null,

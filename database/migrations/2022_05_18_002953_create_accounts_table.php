@@ -11,11 +11,16 @@ class CreateAccountsTable extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignIdFor(\App\Models\Router::class)
+            $table->foreignIdFor(\App\Models\RouterLanip::class)
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
+                ->nullOnDelete();
+            $table->foreignIdFor(\App\Models\RouterWanip::class)
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
 
-            $table->string('username');
+            $table->string('username')->unique();
             $table->string('password');
             $table->string('first_name');
             $table->string('last_name');
@@ -23,14 +28,7 @@ class CreateAccountsTable extends Migration
             $table->string('phone')->unique()->nullable();
             $table->string('address')->nullable();
 
-            $table->ipAddress('lan_ip');
-            $table->ipAddress('wan_ip');
-            $table->integer('wan_port_min');
-            $table->integer('wan_port_max');
-
             $table->timestamps();
-
-            $table->unique(['router_id','username']);
         });
     }
 
