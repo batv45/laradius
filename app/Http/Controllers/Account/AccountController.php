@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\AccountCreateRequest;
+use App\Http\Requests\Account\AccountUpdateRequest;
 use App\Models\Account;
 use App\Models\Router;
-use App\Models\RouterIP;
+use App\Models\RouterLanip;
+use App\Models\RouterWanip;
 use Illuminate\Http\Request;
 use Illuminate\Support\MessageBag;
 use Inertia\Inertia;
 use IPv4\SubnetCalculator;
 use RouterOS\Query;
-use function Clue\StreamFilter\fun;
 
 class AccountController extends Controller
 {
@@ -27,42 +28,39 @@ class AccountController extends Controller
 
     public function create(Request $request)
     {
-        $used_ips = Account::select(['lan_ip','wan_ip','wan_port_min','wan_port_max'])->get();
-        $used_ports = $used_ips->map(function($acc){
-            return ['min'=> $acc->wan_port_min,'max'=>$acc->wan_port_max];
-        });
-
-        $routers = Router::with('ips')->get();
-        $routers->each(function(Router $rot){
-            $rot->ips->append(['usable_ips','port_range']);
-        });
+        $routers = Router::with('lanips','wanips')->get();
+        $used_ips = Account::select(['router_lanip_id','router_wanip_id'])->get();
 
         if( $routers->count() < 1 ){
             alert('Router Bulunamadı!','Abone eklemek için önce Router oluşturmalısınız.','warning');
             return redirect()->route('router.index');
         }
-
         return inertia('Account/Create',[
             'page_routers' => $routers,
-            'page_used_lan_ips' => $used_ips->unique('lan_ip')->pluck('lan_ip'),
-            'page_used_wan_ips' => $used_ips->unique('wan_ip')->pluck('wan_ip'),
-            'page_used_ports' => $used_ports
+            'page_used_ips' => [
+                'lan' => $used_ips->map(function ($item){
+                    return $item['router_lanip_id'];
+                }),
+                'wan' => $used_ips->map(function ($item){
+                    return $item['router_wanip_id'];
+                })
+            ]
         ]);
     }
 
     public function store(AccountCreateRequest $request)
     {
-        $lan = RouterIP::findOrFail($request->input('lan_subnet'));
-        $wan = RouterIP::findOrFail($request->input('wan_subnet'));
+        $router = Router::findOrFail($request->input('router_id'));
         $mess = new MessageBag();
 
-        if( !$lan->isIPAddressInSubnet($request->input('lan_ip')) ){
-            $mess->add('lan_ip', 'LAN IP seçili blok için uygun değil.');
+
+        if( !$router->lanips()->find($request->input('router_lanip_id'))->exists() ){
+            $mess->add('router_lanip_id', 'LAN IP mevcut değil.');
         }
-        if( !$wan->isIPAddressInSubnet($request->input('wan_ip')) ){
-            $mess->add('wan_ip', 'WAN IP seçili blok için uygun değil.');
+        if( !$router->wanips()->find($request->input('router_wanip_id'))->exists() ){
+            $mess->add('router_wanip_id', 'WAN IP mevcut değil.');
         }
-        if( Account::where('username',$request->input('username'))->where('router_id',$request->input('router_id'))->exists()){
+        if( Account::where('username',$request->input('username'))->where('router_lanip_id',$request->input('router_lanip_id'))->exists()){
             $mess->add('username', "Router'da bu kullanıcı kaydı mevcut.");
         }
 
@@ -70,10 +68,7 @@ class AccountController extends Controller
             return back()->withInput()->withErrors($mess);
         }
 
-        $acc = Account::create(array_merge($request->validated(),[
-            'wan_port_min' => $request->wan_port['min'],
-            'wan_port_max' => $request->wan_port['max'],
-        ]));
+        $acc = Account::create($request->validated());
         flash('Yeni abone oluşturuldu.')->success();
 
         return redirect()->route('account.show',$acc->id);
@@ -105,15 +100,48 @@ class AccountController extends Controller
 
     public function edit($account_id)
     {
-        $acc = Account::findOrFail($account_id);
+        $acc = Account::with('router_lanip','router_wanip')->findOrFail($account_id);
+
+        $routers = Router::with('lanips','wanips')->get();
+        $used_ips = Account::select(['router_lanip_id','router_wanip_id'])->get();
+
         return inertia('Account/Edit',[
-            'page_account' => $acc
+            'page_account' => $acc,
+            'page_routers' => $routers,
+            'page_used_ips' => [
+                'lan' => $used_ips->map(function ($item){
+                    return $item['router_lanip_id'];
+                }),
+                'wan' => $used_ips->map(function ($item){
+                    return $item['router_wanip_id'];
+                })
+            ]
         ]);
     }
 
-    public function update(AccountCreateRequest $request, $account_id)
+    public function update(AccountUpdateRequest $request, $account_id)
     {
         $acc = Account::findOrFail($account_id);
+
+        $router = Router::findOrFail($request->input('router_id'));
+        $mess = new MessageBag();
+
+
+        if( !$router->lanips()->find($request->input('router_lanip_id'))->exists() ){
+            $mess->add('router_lanip_id', 'LAN IP mevcut değil.');
+        }
+        if( !$router->wanips()->find($request->input('router_wanip_id'))->exists() ){
+            $mess->add('router_wanip_id', 'WAN IP mevcut değil.');
+        }
+        if( Account::where('username',$request->input('username'))
+            ->whereKeyNot($acc->id)
+            ->exists()){
+            $mess->add('username', "Router'da bu kullanıcı kaydı mevcut.");
+        }
+
+        if($mess->count() > 0 ){
+            return back()->withInput()->withErrors($mess);
+        }
 
         $acc->update($request->validated());
 

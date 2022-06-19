@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Router;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Router\RouterCreateRequest;
+use App\Models\Account;
 use App\Models\Router;
 use Exception;
 use Illuminate\Http\Request;
@@ -60,13 +61,22 @@ class RouterController extends Controller
         $router = Router::withTrashed()
             ->with('lanips','wanips')
             ->findOrFail($router_id);
+        $used_ips = Account::select(['router_lanip_id','router_wanip_id'])->get();
 
         if( inertia_get_only() == 'page_router'){
             $router->append('account_active');
         }
 
         return inertia('Router/Show',[
-            'page_router' => $router
+            'page_router' => $router,
+            'page_used_ips' => [
+                'lan' => $used_ips->map(function ($item){
+                    return $item['router_lanip_id'];
+                }),
+                'wan' => $used_ips->map(function ($item){
+                    return $item['router_wanip_id'];
+                })
+            ]
         ]);
     }
 

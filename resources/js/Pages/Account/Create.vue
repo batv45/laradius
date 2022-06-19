@@ -41,91 +41,48 @@
                           <select class="form-select"
                                   :class="{'is-invalid': form_account.errors.router_id}"
                                   :disabled="process_name == 'router_ips'"
-                                  v-model="form_account.router_id">
+                                  v-model="form_account.router">
                               <option value="" hidden disabled selected>Router seçiniz.</option>
-                              <option :value="router.id" v-for="router in page_routers">{{router.identity}} - {{router.ip}}</option>
+                              <option :value="router" v-for="router in page_routers">{{router.identity}} - {{router.ip_address}}</option>
                           </select>
                           <div class="invalid-feedback">{{form_account.errors.router_id}}</div>
                       </div>
-
                       <div class="hr-text">LAN IP</div>
-                      <div class="mb-3">
-                          <label class="form-label required">LAN IP Bloğu</label>
-                          <select class="form-select"
-                                  :class="{'is-invalid': form_account.errors.lan_subnet}"
-                                  :disabled="!form_account.router_id"
-                                  v-model="form_account.lan_subnet">
-                              <option value="" hidden disabled selected>IP bloğu seçiniz.</option>
-                              <option
-                                  v-if="getSubnets('lan').length"
-                                  :value="ip.id"
-                                  v-for="ip in getSubnets('lan')">
-                                  {{ ip.ip }}/{{ ip.subnet_mask }}
-                              </option>
-                              <option value="" v-if="!getSubnets('lan').length"
-                                      disabled selected>LAN IP bloğu bulunamadı.</option>
-                          </select>
-                          <div class="invalid-feedback">{{form_account.errors.lan_subnet}}</div>
-                      </div>
                       <div class="mb-3">
                           <label class="form-label required">LAN IP</label>
                           <select class="form-select"
-                                  :class="{'is-invalid': form_account.errors.lan_ip}"
-                                  v-model="form_account.lan_ip">
+                                  :disabled="!form_account.router"
+                                  :class="{'is-invalid': form_account.errors.router_lanip_id}"
+                                  v-model="form_account.router_lanip_id">
                               <option value="" hidden disabled selected>Boş IP seçiniz.</option>
-                              <option v-if="getUsableIPs('lan',form_account.lan_subnet)"
-                                      :value="ipp" v-for="ipp in getUsableIPs('lan',form_account.lan_subnet)
-                                      .filter(ff => !page_used_lan_ips.includes(ff))">{{ipp}}</option>
+                              <option :value="ipp.id" v-for="ipp in getLanIPS()">{{ipp.ip_address}}</option>
+                              <option value="" disabled v-if="!getLanIPS().length">LAN IP yok.</option>
                           </select>
-                          <div class="invalid-feedback">{{form_account.errors.lan_ip}}</div>
+                          <div class="invalid-feedback">{{form_account.errors.router_lanip_id}}</div>
                       </div>
-
                       <div class="hr-text">WAN IP</div>
-                      <div class="mb-3">
-                          <label class="form-label required">WAN IP Bloğu</label>
-                          <select class="form-select"
-                                  :class="{'is-invalid': form_account.errors.wan_subnet}"
-                                  :disabled="!form_account.router_id"
-                                  v-model="form_account.wan_subnet">
-                              <option value="" hidden disabled selected>IP bloğu seçiniz.</option>
-                              <option
-                                  v-if="getSubnets('wan').length"
-                                  :value="ip.id"
-                                  v-for="ip in getSubnets('wan')">
-                                  {{ ip.ip }}/{{ ip.subnet_mask }} - {{ ip.account_limit }}
-                              </option>
-                              <option value="" v-if="!getSubnets('wan').length"
-                                      disabled selected>WAN IP bloğu bulunamadı.</option>
-                          </select>
-                          <div class="invalid-feedback">{{form_account.errors.wan_subnet}}</div>
-                      </div>
-
                       <div class="mb-3">
                           <label class="form-label required">WAN IP</label>
                           <select class="form-select"
-                                  :class="{'is-invalid': form_account.errors.wan_ip}"
-                                  v-model="form_account.wan_ip">
+                                  :disabled="!form_account.router"
+                                  v-model="form_account.router_wanip_address">
                               <option value="" hidden disabled selected>Boş IP seçiniz.</option>
-                              <option v-if="getUsableIPs('wan',form_account.wan_subnet)"
-                                      :value="ipp" v-for="ipp in getUsableIPs('wan',form_account.wan_subnet)">{{ipp}} -
-                                  {{page_used_wan_ips.filter(f=>f == ipp).length}} /
-                              {{getSubnets('wan').find(ff => ff.id == form_account.wan_subnet) ?
-                                      getSubnets('wan').find(ff => ff.id == form_account.wan_subnet).account_limit : ''}}</option>
+                              <option :value="ipp.ip_address" v-for="ipp in getWanIPS()">{{ipp.ip_address}} {{getWanPorts(ipp.ip_address).length}} / {{
+                                      form_account.router.wanips
+                                        .filter(f=>f.ip_address == ipp.ip_address).length }}</option>
+                              <option value="" disabled v-if="!getWanIPS().length">WAN IP yok.</option>
                           </select>
-                          <div class="invalid-feedback">{{form_account.errors.wan_ip}}</div>
                       </div>
-                      {{form_account.wan_port}}
                       <div class="mb-3">
-                          <label class="form-label required">WAN Port</label>
+                          <label class="form-label required">WAN PORT <small>Boş port: {{getWanPorts().length}}</small></label>
                           <select class="form-select"
-                                  :class="{'is-invalid': form_account.errors.wan_port}"
-                                  :disabled="!form_account.wan_subnet"
-                                  v-model="form_account.wan_port">
-                              <option value="" hidden disabled selected>WAN Port aralığı seçiniz.</option>
-                              <option v-if="getPortRanges()"
-                                      :value="port" v-for="(port,key) in getPortRanges()">{{port.min}} - {{port.max}}</option>
+                                  :disabled="!form_account.router_wanip_address"
+                                  :class="{'is-invalid': form_account.errors.router_wanip_id}"
+                                  v-model="form_account.router_wanip_id">
+                              <option value="" hidden disabled selected>Boş IP seçiniz.</option>
+                              <option :value="ipp.id" v-for="ipp in getWanPorts()">{{ipp.port_min}} - {{ipp.port_max}}</option>
                           </select>
-                          <div class="invalid-feedback">{{form_account.errors.wan_port}}</div>
+                          <div class="invalid-feedback">{{form_account.errors.router_wanip_id}}</div>
                       </div>
                   </div>
               </div>
@@ -155,7 +112,8 @@ import {forEach, reject} from "lodash";
 export default {
     components: {TextInput, AppLayout,PageHeader},
     props:{
-        page_routers: Array
+        page_routers: Array,
+        page_used_ips: Object
     },
     data(){
         return {
@@ -168,15 +126,45 @@ export default {
                 email: null,
                 phone: null,
                 address: null,
-                lan_ip: '',
-                wan_ip: '',
-                router_id:''
+                router: '',
+                router_lanip_id: '',
+                router_wanip_address: '',
+                router_wanip_id: '',
             }),
         }
     },
     methods:{
         submitForm(){
-            this.form_account.post(route('account.store'))
+            this.form_account.transform((data) => ({
+                ...data,
+                router_id : data.router ? data.router.id : null
+            })).post(route('account.store'))
+        },
+        getLanIPS(){
+          if( this.form_account.router && this.form_account.router.lanips ){
+              return this.form_account.router.lanips.filter(f => !this.page_used_ips.lan.includes(f.id))
+          }else{
+              return []
+          }
+        },
+        getWanIPS(){
+            if( this.form_account.router ){
+                return _.uniqBy(this.form_account.router.wanips,'ip_address')
+            }else{
+                return []
+            }
+        },
+        getWanPorts(ip_address = null){
+            if(ip_address){
+                return this.form_account.router.wanips
+                    .filter(f=>f.ip_address==ip_address && this.page_used_ips.wan.includes(f.id))
+            } else if( this.form_account.router ){
+                return this.form_account.router.wanips
+                    .filter(f=>f.ip_address==this.form_account.router_wanip_address && !this.page_used_ips.wan.includes(f.id))
+            }else{
+                return []
+            }
+
         }
     }
 }

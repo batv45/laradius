@@ -4,7 +4,11 @@
         <input :id="id" ref="input"
                v-bind="{ ...$attrs, class: null }"
                class="form-control"
-               :class="{ 'is-invalid': error,'form-number': type === 'number' }"
+               :class="{
+                    'is-invalid': error,
+                   'form-number': type === 'number' ,
+                   'form-control-sm': sm
+                }"
                :type="type"
                :value="value"
                :required="required"
@@ -21,6 +25,10 @@ export default {
     inheritAttrs: false,
     props: {
         required:{
+          type: Boolean,
+          default: false
+        },
+        sm:{
           type: Boolean,
           default: false
         },

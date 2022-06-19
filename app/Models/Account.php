@@ -11,8 +11,8 @@ class Account extends Model
     use HasFactory;
 
     protected $fillable = [
-        'router_lanip',
-        'router_wanip',
+        'router_lanip_id',
+        'router_wanip_id',
         'username',
         'password',
         'first_name',
@@ -27,13 +27,13 @@ class Account extends Model
     ];
 
     // RELATIONSHIPS
-    public function router_lanip(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function router_lanip(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasOne(RouterLanip::class);
+        return $this->belongsTo(RouterLanip::class);
     }
-    public function router_wanip(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function router_wanip(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasOne(RouterWanip::class);
+        return $this->belongsTo(RouterWanip::class);
     }
 
     // SETTERS
@@ -50,5 +50,14 @@ class Account extends Model
     public function getFullNameAttribute()
     {
         return $this->first_name.' '.$this->last_name;
+    }
+
+    public function getRouterIdAttribute()
+    {
+        return $this->router_lanip->router_id;
+    }
+    public function getWanIPAddressAttribute()
+    {
+        return $this->router_wanip->ip_address;
     }
 }

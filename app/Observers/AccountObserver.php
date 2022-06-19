@@ -9,12 +9,12 @@ class AccountObserver
 {
     public function created(Account $account)
     {
-        app(RadiusService::class)->syncAccount($account);
+        app(RadiusService::class)->writeAccount($account);
     }
 
     public function updated(Account $account)
     {
-        app(RadiusService::class)->syncAccount($account);
+        app(RadiusService::class)->writeAccount($account);
     }
 
     public function deleted(Account $account)

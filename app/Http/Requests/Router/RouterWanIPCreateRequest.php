@@ -9,7 +9,7 @@ class RouterWanIPCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ip_address' => 'required|string',
+            'ip_address' => 'required|ipv4',
             'account_limit' => 'required|integer'
         ];
     }
@@ -17,7 +17,8 @@ class RouterWanIPCreateRequest extends FormRequest
     public function attributes()
     {
         return [
-          'ip_address' => 'IP Adres'
+          'ip_address' => 'IP Adres',
+            'account_limit' => 'Abone Sayısı'
         ];
     }
 }

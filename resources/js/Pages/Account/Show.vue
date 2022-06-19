@@ -70,11 +70,15 @@ export default {
     data(){
         return {
             process_name: 'meta_load',
+            t:null
         }
     },
     mounted() {
         this.getMeta(false);
-        setInterval(this.getMeta, 3000);
+        this.t = setInterval(this.getMeta, 3000);
+    },
+    beforeDestroy() {
+        clearInterval(this.t)
     },
     methods:{
         deleteAccount(){

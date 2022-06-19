@@ -68,8 +68,7 @@ class RouterLanIPController extends Controller
     {
         $router = Router::withTrashed()->findOrFail($router_id);
         $lanip = RouterLanip::findOrFail($lanip_id);
-        sleep(2);
-//        $lanip->delete();
+        $lanip->delete();
         flash('LAN IP Bilgisi silindi.')->success();
         return redirect()->route('router.show',$router_id);
     }

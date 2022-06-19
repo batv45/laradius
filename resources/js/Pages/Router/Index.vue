@@ -11,7 +11,13 @@
                     <div class="card-header">
                         <h3 class="card-title">Yeni Mikrotik Oluştur</h3>
                         <div class="card-actions">
-                            <button type="submit" class="btn-action" v-b-tooltip.bottom.hover title="Kaydet"><check-icon/></button>
+                            <button type="submit" class="btn-action"
+                                    :disabled="process_name == 'router_create'"
+                                    v-b-tooltip.bottom.hover title="Kaydet">
+                                <span v-if="process_name == 'router_create'"
+                                      class="spinner-border spinner-border-sm" role="status"></span>
+                                <check-icon v-else />
+                            </button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -30,6 +36,7 @@
                             </div>
                         </div>
                     </div>
+                    <CardProgress :process="process_name == 'router_create'"></CardProgress>
                 </form>
             </div>
         </div>
@@ -89,8 +96,9 @@ import PageHeader from "~/Components/PageHeader";
 import TextInput from "~/Components/TextInput";
 import {Link} from "@inertiajs/inertia-vue";
 import FormErrors from "~/Components/FormErrors";
+import CardProgress from "~/Components/CardProgress";
 export default {
-    components: {FormErrors, TextInput, PageHeader, AppLayout, Link},
+    components: {CardProgress, FormErrors, TextInput, PageHeader, AppLayout, Link},
     props:{
         page_routers: Array,
         page_routers_check: Object

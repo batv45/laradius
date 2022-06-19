@@ -4,7 +4,7 @@ namespace App\Http\Requests\Account;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AccountCreateRequest extends FormRequest
+class AccountUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
@@ -13,7 +13,7 @@ class AccountCreateRequest extends FormRequest
             'password' => 'required|string|min:3',
             'first_name' => 'required|string|min:3',
             'last_name' => 'required|string|min:2',
-            'email' => 'required|email|max:125|unique:accounts,email',
+            'email' => 'required|email|max:125|unique:accounts,email,'.$this->route('account'),
             'phone' => 'required|string|max:25',
             'address' => 'nullable|string|max:255',
             'router_id' => 'required|int',

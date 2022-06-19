@@ -1,5 +1,5 @@
 <template>
-  <AppLayout title="Abone Oluştur">
+  <AppLayout title="Abone Düzenle">
     <PageHeader :back-url="route('account.edit',page_account)">
         <div class="col">
             <div class="page-title"><edit-icon class="text-secondary"/> Abone Düzenle</div>
@@ -29,6 +29,64 @@
                   </div>
               </div>
           </div>
+          <!-- Mikrotik Details -->
+          <div class="col-lg-4 col-md-6">
+              <div class="card">
+                  <div class="card-header">
+                      <h3 class="card-title">Mikrotik Bilgileri</h3>
+                  </div>
+                  <div class="card-body">
+                      <div class="mb-3">
+                          <label class="form-label required">Router</label>
+                          <select class="form-select"
+                                  :class="{'is-invalid': form_account.errors.router_id}"
+                                  :disabled="process_name == 'router_ips'"
+                                  v-model="form_account.router">
+                              <option value="" hidden disabled selected>Router seçiniz.</option>
+                              <option :value="router" v-for="router in page_routers">{{router.identity}} - {{router.ip_address}}</option>
+                          </select>
+                          <div class="invalid-feedback">{{form_account.errors.router_id}}</div>
+                      </div>
+                      <div class="hr-text">LAN IP</div>
+                      <div class="mb-3">
+                          <label class="form-label required">LAN IP</label>
+                          <select class="form-select"
+                                  :disabled="!form_account.router"
+                                  :class="{'is-invalid': form_account.errors.router_lanip_id}"
+                                  v-model="form_account.router_lanip_id">
+                              <option value="" hidden disabled selected>Boş IP seçiniz.</option>
+                              <option :value="ipp.id" v-for="ipp in getLanIPS()">{{ipp.ip_address}}</option>
+                              <option value="" disabled v-if="!getLanIPS().length">LAN IP yok.</option>
+                          </select>
+                          <div class="invalid-feedback">{{form_account.errors.router_lanip_id}}</div>
+                      </div>
+                      <div class="hr-text">WAN IP</div>
+                      <div class="mb-3">
+                          <label class="form-label required">WAN IP</label>
+                          <select class="form-select"
+                                  :disabled="!form_account.router"
+                                  v-model="form_account.router_wanip_address">
+                              <option value="" hidden disabled selected>Boş IP seçiniz.</option>
+                              <option :value="ipp.ip_address" v-for="ipp in getWanIPS()">{{ipp.ip_address}} {{getWanPorts(ipp.ip_address).length}} / {{
+                                      form_account.router.wanips
+                                          .filter(f=>f.ip_address == ipp.ip_address).length }}</option>
+                              <option value="" disabled v-if="!getWanIPS().length">WAN IP yok.</option>
+                          </select>
+                      </div>
+                      <div class="mb-3">
+                          <label class="form-label required">WAN PORT <small>Boş port: {{getWanPorts().length}}</small></label>
+                          <select class="form-select"
+                                  :disabled="!form_account.router_wanip_address"
+                                  :class="{'is-invalid': form_account.errors.router_wanip_id}"
+                                  v-model="form_account.router_wanip_id">
+                              <option value="" hidden disabled selected>Boş IP seçiniz.</option>
+                              <option :value="ipp.id" v-for="ipp in getWanPorts()">{{ipp.port_min}} - {{ipp.port_max}}</option>
+                          </select>
+                          <div class="invalid-feedback">{{form_account.errors.router_wanip_id}}</div>
+                      </div>
+                  </div>
+              </div>
+          </div>
 <!-- Mikrotik Details -->
           <div class="col-lg-4 col-md-6">
               <div class="card">
@@ -38,8 +96,6 @@
                   <div class="card-body">
                       <TextInput label="PPPoE Kullanıcı Adı" v-model="form_account.username" :error="form_account.errors.username" class="mb-3"></TextInput>
                       <TextInput label="PPPoE Şifre" v-model="form_account.password" :error="form_account.errors.password" class="mb-3"></TextInput>
-                      <TextInput v-model="form_account.lan_ip" :error="form_account.errors.lan_ip" class="mb-3" label="LAN IP Adres" />
-                      <TextInput v-model="form_account.wan_ip" :error="form_account.errors.wan_ip" class="mb-3" label="WAN IP Adres" />
                   </div>
               </div>
           </div>
@@ -54,10 +110,13 @@ import TextInput from "~/Components/TextInput";
 export default {
     components: {TextInput, AppLayout,PageHeader},
     props:{
-        page_account: Object
+        page_account: Object,
+        page_routers: Array,
+        page_used_ips: Object
     },
     data(){
         return {
+            process_name:null,
             form_account: this.$inertia.form({
                 username: this.page_account.username,
                 password: this.page_account.password,
@@ -66,14 +125,45 @@ export default {
                 email: this.page_account.email,
                 phone: this.page_account.phone,
                 addres: this.page_account.address,
-                lan_ip: this.page_account.lan_ip,
-                wan_ip: this.page_account.wan_ip,
+                router: this.page_routers.find(r => r.id == (this.page_account.router_lanip.router_id) ),
+                router_lanip_id: this.page_account.router_lanip_id,
+                router_wanip_address: this.page_account.router_wanip.ip_address,
+                router_wanip_id: this.page_account.router_wanip_id,
             })
         }
     },
     methods:{
         submitForm(){
-            this.form_account.put(route('account.update',this.page_account))
+            this.form_account.transform((data) => ({
+                ...data,
+                router_id : data.router ? data.router.id : null
+            })).put(route('account.update',this.page_account))
+        },
+        getLanIPS(){
+            if( this.form_account.router && this.form_account.router.lanips ){
+                return this.form_account.router.lanips.filter(f => f.id == this.page_account.router_lanip_id || !this.page_used_ips.lan.includes(f.id))
+            }else{
+                return []
+            }
+        },
+        getWanIPS(){
+            if( this.form_account.router ){
+                return _.uniqBy(this.form_account.router.wanips,'ip_address')
+            }else{
+                return []
+            }
+        },
+        getWanPorts(ip_address = null){
+            if(ip_address){
+                return this.form_account.router.wanips
+                    .filter(f=>f.ip_address==ip_address && this.page_used_ips.wan.includes(f.id))
+            } else if( this.form_account.router ){
+                return this.form_account.router.wanips
+                    .filter(f=>f.ip_address==this.form_account.router_wanip_address && (f.id == this.page_account.router_wanip_id ||!this.page_used_ips.wan.includes(f.id)))
+            }else{
+                return []
+            }
+
         }
     }
 }

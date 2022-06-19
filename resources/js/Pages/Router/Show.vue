@@ -45,7 +45,17 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card" style="height: 28rem">
+                <div class="mb-2">
+                    <div class="input-group input-group-flat">
+                        <input type="text" v-model="filter.lanip_search" placeholder="LAN IP Ara" autocomplete="off" class="form-control">
+                        <span class="input-group-text">
+                            <a href="#" @click.prevent="filter.lanip_search = null" v-if="filter.lanip_search" class="link-secondary" title="" data-bs-toggle="tooltip" data-bs-original-title="Clear search">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </a>
+                          </span>
+                    </div>
+                </div>
+                <div class="card" style="max-height: 28rem">
                     <div class="card-header">
                         <h3 class="card-title">LAN IP Listesi - <small>{{page_router.lanips.length}} Adet</small></h3>
                         <div class="card-actions">
@@ -62,7 +72,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="ip in page_router.lanips">
+                            <tr v-for="ip in filterLanIP()">
                                 <td>
                                     {{ip.ip_address}}
                                 </td>
@@ -86,7 +96,17 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card" style="height: 28rem">
+                <div class="mb-2">
+                    <div class="input-group input-group-flat">
+                        <input type="text" v-model="filter.wanip_search" placeholder="WAN IP Ara" autocomplete="off" class="form-control">
+                        <span class="input-group-text">
+                            <a href="#" @click.prevent="filter.wanip_search = null" v-if="filter.wanip_search" class="link-secondary" title="" data-bs-toggle="tooltip" data-bs-original-title="Clear search">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </a>
+                          </span>
+                    </div>
+                </div>
+                <div class="card" style="max-height: 28rem">
                     <div class="card-header">
                         <h3 class="card-title">WAN IP Listesi - <small>{{page_router.wanips.length}} Adet</small></h3>
                         <div class="card-actions">
@@ -103,12 +123,13 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="ip in page_router.wanips">
+                            <tr v-for="ip in filterWanIP()">
                                 <td>
                                     {{ip.ip_address}}
                                 </td>
                                 <td>
-                                    {{ip.port_min}}-{{ip.port_max}}
+                                    {{getWanPorts(ip.ip_address).length}} /
+                                    {{page_router.wanips.filter(f=>f.ip_address == ip.ip_address).length}}
                                 </td>
                                 <td>
                                     <a href="#" type="button" @click.prevent="deleteIP(route('router.wanip.destroy',[page_router,ip]),'wan'+ip.id)"
@@ -133,14 +154,23 @@
 import AppLayout from "~/Layouts/AppLayout";
 import PageHeader from "~/Components/PageHeader";
 import {Link} from "@inertiajs/inertia-vue";
+import TextInput from "~/Components/TextInput";
+
 export default {
-    components: {AppLayout, PageHeader, Link},
+    components: {TextInput, AppLayout, PageHeader, Link},
     props:{
-        page_router: Object
+        page_router: Object,
+        page_used_ips: Object
     },
     data(){
         return {
-            process_name: null
+            process_name: null,
+            filtered_lanips: [],
+            filtered_wanips: [],
+            filter: {
+                lanip_search: null,
+                wanip_search: null,
+            }
         }
     },
     mounted() {
@@ -173,6 +203,27 @@ export default {
                     })
                 }
             })
+        },
+        filterLanIP(){
+            if( this.filter.lanip_search ){
+                return this.page_router.lanips.filter(f => f.ip_address.includes(this.filter.lanip_search))
+            }else{
+                return this.page_router.lanips
+            }
+        },
+        filterWanIP(){
+            if( this.filter.wanip_search ){
+                return _.uniqBy(this.page_router.wanips,'ip_address').filter(f => f.ip_address.includes(this.filter.wanip_search))
+            }else{
+                return _.uniqBy(this.page_router.wanips,'ip_address')
+            }
+        },
+        getWanPorts(ip_address){
+            if(ip_address){
+                return this.page_router.wanips
+                    .filter(f=>f.ip_address==ip_address && this.page_used_ips.wan.includes(f.id))
+            }
+
         }
     }
 }

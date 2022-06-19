@@ -15,10 +15,11 @@ class RadiusService
     }
 
 
-    public function syncAccount(Account $account)
+    public function writeAccount(Account $account)
     {
-        $this->getDB()->table('radcheck')->delete(); // DELETE ALL RADIUS USER ROWS
-        $this->getDB()->table('radreply')->delete(); // DELETE ALL RADIUS USER REPLY ROWS
+
+        $this->getDB()->table('radcheck')->where('username',$account->getOriginal('username'))->delete(); //
+        $this->getDB()->table('radreply')->where('username',$account->getOriginal('username'))->delete(); //
 
         $this->getDB()->table('radcheck')->insert([
             'username' => $account->username,
@@ -37,7 +38,7 @@ class RadiusService
                 'username' => $account->username,
                 'attribute' => 'Framed-IP-Address',
                 'op' => '=',
-                'value' => $account->lan_ip
+                'value' => $account->router_lanip->ip_address
             ],
             [
                 'username' => $account->username,
@@ -54,6 +55,8 @@ class RadiusService
         ]); //
     }
 
+
+    // PRIVATE FUNCS
     private function table(string $table)
     {
         return $this->getDB()->table($table);
