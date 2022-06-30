@@ -11,6 +11,33 @@
                 </b-dropdown>
             </template>
         </PageHeader>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Hotspot Listesi</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter table-nowrap">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Login Link</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="hotspot in page_router.hotspots">
+                                <td>{{hotspot.name}} <a :href="route('hotspot.login',hotspot.id)">
+                                    <LinkIcon></LinkIcon>
+                                </a> </td>
+                                <td>{{hotspot.link_login_post}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-4">
                 <div class="card">

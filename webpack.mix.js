@@ -13,7 +13,9 @@ const path = require("path");
 const webpackConfig = require('./webpack.config')
 
 mix.js('resources/js/app.js', '/js')
+    .js('resources/js/hotspot.js', '/js')
     .sass('resources/scss/app.scss','/css')
+    .sass('resources/scss/hotspot.scss','/css')
     .vue()
     .disableNotifications()
     .webpackConfig(webpackConfig);

@@ -3,6 +3,7 @@
 namespace App\Services\Radius;
 
 use App\Models\Account;
+use App\Models\HotspotAccount;
 use App\Models\User;
 
 class RadiusService
@@ -15,6 +16,17 @@ class RadiusService
     }
 
 
+    public function syncHotspotAccount(HotspotAccount $account)
+    {
+        $this->getDB()->table('radcheck')->where('username',$account->username)->delete(); // delete old data
+        $this->getDB()->table('radcheck')->insert([
+            'username' => $account->username,
+            'attribute' => 'SHA2-Password',
+            'op' => ':=',
+            'value' => hash('sha256','123') // default password
+        ]);
+
+    }
     public function writeAccount(Account $account)
     {
 

@@ -14,31 +14,11 @@ class RouterController extends Controller
 {
     public function index(Request $request)
     {
-        $routers = Router::withTrashed()->get();
-
-        if( inertia_get_only() == 'page_routers'){
-            $routers->append('client_status');
-        }
+        $routers = Router::withTrashed();
 
         return inertia('Router/Index',[
-            'page_routers' => $routers,
-            'page_routers_check' => Inertia::lazy(function() use($request) {
-                $get_router_id = (int)$request->header('X-Laradius-RouterID');
-                if( $get_router_id > 0 ){
-                    $router = Router::findOrFail($get_router_id);
-                    try {
-                        sleep(4);
-                        $client = $router->getRouterOS();
-                        return (object)[
-                            $router->id => true
-                        ];
-                    } catch (Exception $exception) {
-                        return (object)[
-                            $router->id => false
-                        ];
-                    }
-                }
-                return (object)[];
+            'page_routers' => Inertia::lazy(function() use($routers) {
+                return $routers->get()->append('client_status');
             })
         ]);
     }
@@ -59,7 +39,7 @@ class RouterController extends Controller
     public function show($router_id)
     {
         $router = Router::withTrashed()
-            ->with('lanips','wanips')
+            ->with('lanips','wanips','hotspots')
             ->findOrFail($router_id);
         $used_ips = Account::select(['router_lanip_id','router_wanip_id'])->get();
 

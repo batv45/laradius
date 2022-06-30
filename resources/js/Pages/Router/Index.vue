@@ -55,32 +55,51 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="router in page_routers">
-                                <td class="fst-italic text-muted">#{{router.id}}</td>
-                                <td>{{router.ip_address}} : {{router.port}}
-                                    <span class="badge bg-warning" v-if="router.deleted_at">Arşiv</span>
-                                </td>
-                                <td>{{router.username}} : {{router.password}}
-                                    <span v-if="process_name == 'router_check'" class="spinner ms-1 spinner-border spinner-border-sm"></span>
-                                    <span v-else-if="router.client_status" class="badge bg-success ms-1"></span>
-                                    <span v-else class="badge bg-red ms-1"></span>
+                            <tr class="placeholder-glow" v-if="process_name == 'router_check'">
+                                <td>
+                                    <div class="placeholder placeholder-xs col-12"></div>
                                 </td>
                                 <td>
-                                    <span v-if="router.account_count">{{ router.account_count }} abone</span>
-                                    <span v-else class="text-muted">Abone yok</span>
+                                    <div class="placeholder placeholder-xs col-7"></div>
                                 </td>
                                 <td>
-                                    <div class="btn-group">
-                                        <Link :href="route('router.show',router.id)" class="btn btn-light">
-                                            <chevron-right-icon/>
-                                            Görüntüle
-                                        </Link>
-                                    </div>
+                                    <div class="placeholder placeholder-xs col-7"></div>
+                                </td>
+                                <td>
+                                    <div class="placeholder placeholder-xs col-7"></div>
+                                </td>
+                                <td>
+                                    <div class="placeholder placeholder-xs col-12"></div>
                                 </td>
                             </tr>
-                            <tr v-if="!page_routers.length">
-                                <td colspan="5" class="text-muted text-center">Liste Boş.</td>
-                            </tr>
+                            <template v-else>
+                                <tr v-for="router in page_routers">
+                                    <td class="fst-italic text-muted">#{{router.id}}</td>
+                                    <td>{{router.ip_address}} : {{router.port}}
+                                        <span class="badge bg-warning" v-if="router.deleted_at">Arşiv</span>
+                                    </td>
+                                    <td>{{router.username}} : {{router.password}}
+                                        <span v-if="process_name == 'router_check'" class="spinner ms-1 spinner-border spinner-border-sm"></span>
+                                        <span v-else-if="router.client_status" class="badge bg-success ms-1"></span>
+                                        <span v-else class="badge bg-red ms-1"></span>
+                                    </td>
+                                    <td>
+                                        <span v-if="router.account_count">{{ router.account_count }} abone</span>
+                                        <span v-else class="text-muted">Abone yok</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <Link :href="route('router.show',router.id)" class="btn btn-light">
+                                                <chevron-right-icon/>
+                                                Görüntüle
+                                            </Link>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="!page_routers || !page_routers.length">
+                                    <td colspan="5" class="text-muted text-center">Liste Boş.</td>
+                                </tr>
+                            </template>
                             </tbody>
                         </table>
                     </div>
@@ -100,8 +119,7 @@ import CardProgress from "~/Components/CardProgress";
 export default {
     components: {CardProgress, FormErrors, TextInput, PageHeader, AppLayout, Link},
     props:{
-        page_routers: Array,
-        page_routers_check: Object
+        page_routers: Array
     },
     data(){
         return {
@@ -115,7 +133,7 @@ export default {
         }
     },
     mounted() {
-        setTimeout(this.routerCheck,100)
+        setTimeout(this.routerCheck,10)
     },
     methods:{
         submitCreate(){

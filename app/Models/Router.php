@@ -14,6 +14,10 @@ class Router extends Model
     ];
 
     // RELATIONSHIPS
+    public function hotspots(): \Illuminate\Database\Eloquent\Relations\HasMany|Hotspot
+    {
+        return $this->hasMany(Hotspot::class);
+    }
     public function lanips(): \Illuminate\Database\Eloquent\Relations\HasMany|RouterLanip
     {
         return $this->hasMany(RouterLanip::class);
@@ -37,7 +41,7 @@ class Router extends Model
     public function getRouterOS(int $timeout = 5)
     {
         return \RouterOS::client([
-            'host' => $this->ip,
+            'host' => $this->ip_address,
             'user' => $this->username,
             'pass' => $this->password,
             'port' => $this->port,
@@ -57,6 +61,7 @@ class Router extends Model
     {
         try {
             $this->getRouterOS(1);
+
             return true;
         }catch (\Exception $e){
             return false;

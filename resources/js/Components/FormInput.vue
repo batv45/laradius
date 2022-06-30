@@ -8,10 +8,10 @@
             :placeholder="label"
             :value="value"
             :required="required"
-            :class="{'is-invalid':name.length?$page.props.errors.hasOwnProperty(name):''}"
+            :class="{'is-invalid':error}"
             v-on:input="updateValue($event.target.value)">
 
-        <div class="invalid-feedback" v-if="name.length">{{ $page.props.errors[name]}}</div>
+        <div class="invalid-feedback" v-if="error">{{ error }}</div>
     </div>
 </template>
 
@@ -28,7 +28,7 @@ export default {
         value: {
             type: String
         },
-        name: {
+        error: {
             type: String
         },
         required: {

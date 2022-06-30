@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\HotspotAccount;
 use Epigra\TrGeoZones\Database\Seeders\TrGeoZonesDatabaseSeeder;
 use Illuminate\Database\Seeder;
 
@@ -21,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(UserSeeder::class);
         $this->call(AccountSeeder::class);
+        $this->call(HotspotSeeder::class);
 //        \App\Models\User::factory(22)->create();
     }
 }

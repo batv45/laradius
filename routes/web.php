@@ -57,10 +57,16 @@ Route::group(['middleware' => ['auth']], function () {
 });
 //endregion Routes
 
-//region Payment Routes
-Route::post('payment/callback',[\App\Http\Controllers\Payment\PaymentCallbackController::class,'index'])
-    ->name('payment.callback');
-//endregion Routes
+
+
+//region Hotspots
+Route::group([], function () {
+    // Account
+    Route::post('hotspot/{hotspot}',[\App\Http\Controllers\Hotspot\HotspotLoginController::class,'login'])->name('hotspot.login');
+    Route::post('hotspot/{hotspot}/check',[\App\Http\Controllers\Hotspot\HotspotLoginController::class,'check'])->name('hotspot.check');
+});
+//endregion
+
 
 // Override Fortify route
 Route::group(['middleware' => config('fortify.middleware')], function () {
